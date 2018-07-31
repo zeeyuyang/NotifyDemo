@@ -3,10 +3,14 @@ package com.zyy.helloworld;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -15,8 +19,9 @@ import android.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-public class MainActivity extends Activity implements View.OnClickListener{
+public class MainActivity extends Activity {
 
     private Spinner mMoudleType;
     private Spinner mMoType;
@@ -29,10 +34,9 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private ArrayAdapter mButtonAdpter;
     private NotificationManager mNotiManager;
     private Notification mNotification;
-    private int mNotificationId;
+    private Random mNotificationId;
     private Button mSendNotifitionButton;
     private Button mClearNotifitionButton;
-
     private CheckBox mSuspendCheckBox;
     private CheckBox mSoundCheckBox;
     private CheckBox mShakeCheckBox;
@@ -40,57 +44,48 @@ public class MainActivity extends Activity implements View.OnClickListener{
     private CheckBox mOnGoingCheckBox;
     private CheckBox mReplyCheckBox;
     private CheckBox mGroupCheckBox;
+    Intent notificationClickIntent;
+    PendingIntent notificationClickPendingIntent;
 
-    //发送通知附属条件
-    private NotificationConditions mConditions = new NotificationConditions();
-
+    //发送通知的附属条件
+    private NotificationConditions mConditions ;
+    private Notification.Builder mNotificationBuilder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mConditions = new NotificationConditions(this);
+        mNotiManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        //模板类型
-        mMoudleType = findViewById(R.id.moduleType);
+        //获取页面元素
+        mSuspendCheckBox = (CheckBox)findViewById(R.id.suspend);
+        mShakeCheckBox = (CheckBox)findViewById(R.id.shake);
+        mSoundCheckBox = (CheckBox)findViewById(R.id.dling);
+        mLightCheckBox = (CheckBox)findViewById(R.id.light);
+        mReplyCheckBox = (CheckBox)findViewById(R.id.reply);
+        mGroupCheckBox = (CheckBox)findViewById(R.id.group);
+        mOnGoingCheckBox = (CheckBox)findViewById(R.id.resident);
+        mButtonNum = (Spinner)findViewById(R.id.buttomNumm);
+        mMoType = (Spinner)findViewById(R.id.moType);
+        mMoudleType = (Spinner)findViewById(R.id.moduleType);
+        mSendNotifitionButton = (Button) findViewById(R.id.sendNotifition);
+        mClearNotifitionButton = (Button) findViewById(R.id.clearAll);
+
+        //模板类型，view数据绑定
         mMoudleAdpter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, getMoudleTypeData());
         mMoudleType.setAdapter(mMoudleAdpter);
 
-        //通知样式
-        mMoType = findViewById(R.id.moType);
+        //通知样式  view数据绑定
         mMoTypeAdpter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, getMoType());
         mMoType.setAdapter(mMoTypeAdpter);
 
-        //通知按钮
-        mButtonNum = findViewById(R.id.buttomNumm);
-        mButtonAdpter = new ArrayAdapter(this,  android.R.layout.simple_spinner_item, getmButtonNum());
+        //通知按钮数量  view数据绑定
+        mButtonAdpter = new ArrayAdapter(this,  android.R.layout.simple_spinner_item, getButtonNum());
         mButtonNum.setAdapter(mButtonAdpter);
 
-        //发送通知
-        mSendNotifitionButton = findViewById(R.id.sendNotifition);
-        mSendNotifitionButton.setOnClickListener(this);
-
-        //获取CheckBox的选中情况
-        mSuspendCheckBox = findViewById(R.id.suspend);
-        mShakeCheckBox = findViewById(R.id.shake);
-        mSoundCheckBox = findViewById(R.id.dling);
-        mLightCheckBox = findViewById(R.id.light);
-        mReplyCheckBox = findViewById(R.id.reply);
-        mGroupCheckBox = findViewById(R.id.group);
-        mOnGoingCheckBox = findViewById(R.id.resident);
-
-        mSoundCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b){
-                    mConditions.setSound(Notification.DEFAULT_SOUND);
-                }
-                mConditions.setSound(0);
-            }
-        });
-        mSoundCheckBox.setChecked(true);
-
-
-
+        //常驻CheckBox点击
+        mOnGoingCheckBox.setChecked(false);
         mOnGoingCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -98,37 +93,80 @@ public class MainActivity extends Activity implements View.OnClickListener{
                 mConditions.setOnGoing(b);
             }
         });
-        mOnGoingCheckBox.setChecked(true);
+        //为通知模板下拉框设置监听
+        mMoudleType.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("test", "mMoudleType click position  ---  "+ position);
+                switch (position){
+                    case 0 :
+                        mConditions.setStyle(0);
+                        break;
+                    case 1 :
+                        mConditions.setStyle(1);
+                        break;
+                    case 2 :
+                        mConditions.setStyle(2);
+                        break;
+                    case 3 :
+                        mConditions.setStyle(3);
+                        break;
+                    case 4 :
+                        mConditions.setStyle(4);
+                        break;
+                    case 5 :
+                        mConditions.setStyle(5);
+                        break;
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mNotificationBuilder = mConditions.nomalNotificationBuilder();
+            }
+        });
 
-        mNotiManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
+        //长按删除所有通知
+        mClearNotifitionButton.setOnLongClickListener(new Button.OnLongClickListener(){
+            @Override
+            public boolean onLongClick(View v) {
+                mNotiManager.cancelAll();
+                return true;
+            }
+        });
+        //通知点击跳转
+        notificationClickIntent = new Intent(this, NotificationClickActivity.class);
+        notificationClickPendingIntent = PendingIntent.getActivity(this,
+                0, notificationClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.sendNotifition :
-                Log.d("test", "ongoing--"+mConditions.getOnGoing());
-                sendMoTypeNotifition(mConditions);
-                break;
-        }
-    }
-
 
     //发送通知
-    public void sendMoTypeNotifition(NotificationConditions conditions){
-        mNotification = new Notification.Builder(this)
-                .setContentTitle("通知标题")
-                .setContentText("普通小通知的通知内容")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker("普通小通知")
-                .setOngoing(conditions.getOnGoing())
-                //.setSound(conditions.getSound())
-                .setDefaults(Notification.DEFAULT_VIBRATE)
-                .build();
-        mNotiManager.notify(mNotificationId, mNotification);
-    }
+    public void sendNotification(View view){
+        switch (mConditions.getStyle()){
+            case 0 :
+                mNotificationBuilder = mConditions.nomalNotificationBuilder();
+                break;
+            case 1 :
+                mNotificationBuilder = mConditions.bigTextNotificationBuilder();
+                break;
+            case 2 :
+                mNotificationBuilder = mConditions.bigPictureNotificationBuilder();
+                break;
+            case 3 :
+                mNotificationBuilder = mConditions.emailNotificationBuilder();
+                break;
+            case 4 :
+                mNotificationBuilder = mConditions.progressNotificationBuilder();
+                break;
+            case 5 :
+                mNotificationBuilder = mConditions.messageNotificationBuilder();
+                break;
+        }
 
+        mConditions.getStyle();
+        mNotification = mNotificationBuilder.build();
+        mNotificationId = new Random(100);
+        mNotiManager.notify(mNotificationId.nextInt(), mNotification);
+    }
 
     public List<String> getMoudleTypeData(){
         mMoudleTypeData = new ArrayList<String>();
@@ -149,7 +187,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
         return mMoTypeData;
     }
 
-    public List<String> getmButtonNum(){
+    public List<String> getButtonNum(){
         mButtonNumData = new ArrayList<String>();
         mButtonNumData.add("0 个");
         mButtonNumData.add("1 个");
@@ -158,4 +196,6 @@ public class MainActivity extends Activity implements View.OnClickListener{
         return mButtonNumData;
     }
 
+    public void clearNotification(View view) {
+    }
 }
