@@ -12,7 +12,7 @@ public class NotificationConditions extends Notification{
     private boolean isLight;
     private boolean isOnGoing;
     private boolean isReply;
-    private boolean isGroup;
+    private String groupKey;
 
     private int style = 0;
     private Context mContext;
@@ -79,12 +79,12 @@ public class NotificationConditions extends Notification{
         isReply = reply;
     }
 
-    public boolean isGroup() {
-        return isGroup;
+    public String getGroupKey() {
+        return groupKey;
     }
 
-    public void setGroup(boolean group) {
-        isGroup = group;
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
     }
 
     //普通小通知模板
@@ -94,6 +94,7 @@ public class NotificationConditions extends Notification{
                 .setContentText("普通小通知的内容")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(getOnGoing())
+                .setGroup(groupKey)
                 .setTicker("普通小通知");
         Log.d("test", "builder  普通通知  成功 " );
         return mNotificationBuilder;
@@ -106,6 +107,7 @@ public class NotificationConditions extends Notification{
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker("大文本通知")
                 .setOngoing(getOnGoing())
+                .setGroup(groupKey)
                 .setStyle(new Notification.BigTextStyle())
                 .setContentText("大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知\n"
                         +"大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知\n"
@@ -120,6 +122,7 @@ public class NotificationConditions extends Notification{
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker("大图通知")
                 .setOngoing(getOnGoing())
+                .setGroup(groupKey)
                 .setStyle(new Notification.BigPictureStyle())
                 .setContentText("大图通知内容");
         return mNotificationBuilder;
@@ -132,6 +135,7 @@ public class NotificationConditions extends Notification{
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setTicker("邮件通知")
                 .setOngoing(getOnGoing())
+                .setGroup(groupKey)
                 .setStyle(new Notification.InboxStyle());
         return mNotificationBuilder;
     }
@@ -143,6 +147,7 @@ public class NotificationConditions extends Notification{
                 .setContentTitle("下载通知")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(getOnGoing())
+                .setGroup(groupKey)
                 .setProgress(0, 0, true);
         return mNotificationBuilder;
     }
@@ -154,6 +159,7 @@ public class NotificationConditions extends Notification{
                 .setContentTitle("消息通知")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(getOnGoing())
+                .setGroup(groupKey)
                 .setContentText("消息通知内容");
 //                .setStyle(new Notification.MessagingStyle.Message())
         return mNotificationBuilder;

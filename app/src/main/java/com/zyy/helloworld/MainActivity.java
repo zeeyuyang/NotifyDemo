@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mConditions = new NotificationConditions(this);
+        mNotificationId = new Random(100);
         mNotiManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         //获取页面元素
@@ -91,6 +92,20 @@ public class MainActivity extends Activity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 Log.d("test","checkLinstemer：  "+b);
                 mConditions.setOnGoing(b);
+            }
+        });
+        //通知分组CheckBox点击
+        mGroupCheckBox.setChecked(false);
+        mGroupCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mNotificationId = new Random(10);
+                if (isChecked){
+                    Log.d("test","分组通知  分组groupKey" + mNotificationId);
+                    mConditions.setGroupKey(mNotificationId.toString());
+                }else {
+                    mConditions.setGroupKey(null);
+                }
             }
         });
         //为通知模板下拉框设置监听
@@ -164,7 +179,6 @@ public class MainActivity extends Activity {
 
         mConditions.getStyle();
         mNotification = mNotificationBuilder.build();
-        mNotificationId = new Random(100);
         mNotiManager.notify(mNotificationId.nextInt(), mNotification);
     }
 
@@ -188,7 +202,7 @@ public class MainActivity extends Activity {
     }
 
     public List<String> getButtonNum(){
-        mButtonNumData = new ArrayList<String>();
+        mButtonNumData = new ArrayList<>();
         mButtonNumData.add("0 个");
         mButtonNumData.add("1 个");
         mButtonNumData.add("2 个");
