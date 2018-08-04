@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,7 +26,7 @@ public class MainActivity extends Activity {
     private Spinner mMoType;
     private Spinner mButtonNum;
     private List<String> mMoudleTypeData;
-    private List<String> mMoTypeData;
+    private List<String> mStyleData;
     private List<String> mButtonNumData;
     private ArrayAdapter mMoudleAdpter;
     private ArrayAdapter mMoTypeAdpter;
@@ -44,6 +43,8 @@ public class MainActivity extends Activity {
     private CheckBox mOnGoingCheckBox;
     private CheckBox mReplyCheckBox;
     private CheckBox mGroupCheckBox;
+
+
     Intent notificationClickIntent;
     PendingIntent notificationClickPendingIntent;
 
@@ -78,7 +79,7 @@ public class MainActivity extends Activity {
         mMoudleType.setAdapter(mMoudleAdpter);
 
         //通知样式  view数据绑定
-        mMoTypeAdpter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, getMoType());
+        mMoTypeAdpter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, getRemoteStyle());
         mMoType.setAdapter(mMoTypeAdpter);
 
         //通知按钮数量  view数据绑定
@@ -99,13 +100,12 @@ public class MainActivity extends Activity {
         mGroupCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mNotificationId = new Random(10);
-                if (isChecked){
-                    Log.d("test","分组通知  分组groupKey" + mNotificationId);
-                    mConditions.setGroupKey(mNotificationId.toString());
-                }else {
-                    mConditions.setGroupKey(null);
-                }
+                    mConditions.setGroup(isChecked);
+                    if (isChecked){
+                        mConditions.setSummary(true);
+                    } else {
+                        mConditions.setSummary(false);
+                    }
             }
         });
         //为通知模板下拉框设置监听
@@ -139,6 +139,10 @@ public class MainActivity extends Activity {
                 mNotificationBuilder = mConditions.nomalNotificationBuilder();
             }
         });
+        //通知点击跳转
+        notificationClickIntent = new Intent(this, NotificationClickActivity.class);
+        notificationClickPendingIntent = PendingIntent.getActivity(this,
+                0, notificationClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         //长按删除所有通知
         mClearNotifitionButton.setOnLongClickListener(new Button.OnLongClickListener(){
@@ -148,10 +152,7 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
-        //通知点击跳转
-        notificationClickIntent = new Intent(this, NotificationClickActivity.class);
-        notificationClickPendingIntent = PendingIntent.getActivity(this,
-                0, notificationClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
     }
 
     //发送通知
@@ -178,8 +179,7 @@ public class MainActivity extends Activity {
         }
 
         mConditions.getStyle();
-        mNotification = mNotificationBuilder.build();
-        mNotiManager.notify(mNotificationId.nextInt(), mNotification);
+        mNotiManager.notify(mNotificationId.nextInt(), mNotificationBuilder.build());
     }
 
     public List<String> getMoudleTypeData(){
@@ -193,12 +193,12 @@ public class MainActivity extends Activity {
         return mMoudleTypeData;
     }
 
-    public List<String> getMoType(){
-        mMoTypeData = new ArrayList<String>();
-        mMoTypeData.add("自定义小通知");
-        mMoTypeData.add("自定义大通知");
-        mMoTypeData.add("自定义浮动通知");
-        return mMoTypeData;
+    public List<String> getRemoteStyle(){
+        mStyleData = new ArrayList<String>();
+        mStyleData.add("自定义小通知");
+        mStyleData.add("自定义大通知");
+        mStyleData.add("自定义浮动通知");
+        return mStyleData;
     }
 
     public List<String> getButtonNum(){

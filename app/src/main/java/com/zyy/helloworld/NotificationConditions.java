@@ -12,7 +12,9 @@ public class NotificationConditions extends Notification{
     private boolean isLight;
     private boolean isOnGoing;
     private boolean isReply;
-    private String groupKey;
+    private boolean isGroup;
+    private boolean summary;
+    private int groupKey = 1;
 
     private int style = 0;
     private Context mContext;
@@ -21,6 +23,91 @@ public class NotificationConditions extends Notification{
 
     public NotificationConditions(Context context){
         mContext = context;
+    }
+
+    public void setGroup(Builder builder){
+        if (isGroup){
+            if (summary) {
+                summary = false;
+                builder.setGroupSummary(true);
+            }
+        } else {
+            groupKey++;
+        }
+        builder.setGroup(String.valueOf(groupKey));
+    }
+
+    //普通小通知模板
+    public Builder nomalNotificationBuilder(){
+        mNotificationBuilder = new Notification.Builder(mContext)
+                .setContentTitle("普通小通知")
+                .setContentText("普通小通知的内容")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(getOnGoing())
+                .setTicker("普通小通知");
+        setGroup(mNotificationBuilder);
+        return mNotificationBuilder;
+    }
+
+    //文本通知模板
+    public Builder bigTextNotificationBuilder(){
+        mNotificationBuilder = new Notification.Builder(mContext)
+                .setContentTitle("大文本通知")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker("大文本通知")
+                .setOngoing(getOnGoing())
+                .setStyle(new Notification.BigTextStyle())
+                .setContentText("大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知\n"
+                        +"大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知\n"
+                        +"大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知");
+        Log.d("test", "通知 groupKey--" +groupKey);
+        return mNotificationBuilder;
+    }
+
+    //大图通知模板
+    public Builder bigPictureNotificationBuilder(){
+        mNotificationBuilder = new Notification.Builder(mContext)
+                .setContentTitle("大图通知")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker("大图通知")
+                .setOngoing(getOnGoing())
+                .setStyle(new Notification.BigPictureStyle())
+                .setContentText("大图通知内容");
+        return mNotificationBuilder;
+    }
+
+    //邮件通知模板
+    public Builder emailNotificationBuilder(){
+        mNotificationBuilder = new Notification.Builder(mContext)
+                .setContentTitle("邮件通知")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setTicker("邮件通知")
+                .setOngoing(getOnGoing())
+                .setStyle(new Notification.InboxStyle());
+        return mNotificationBuilder;
+    }
+
+    //下载通知模板
+    public Builder progressNotificationBuilder(){
+        mNotificationBuilder = new Notification.Builder(mContext)
+                .setTicker("下载通知")
+                .setContentTitle("下载通知")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(getOnGoing())
+                .setProgress(0, 0, true);
+        return mNotificationBuilder;
+    }
+
+    //消息通知模板
+    public Builder messageNotificationBuilder(){
+        mNotificationBuilder = new Notification.Builder(mContext)
+                .setTicker("消息通知")
+                .setContentTitle("消息通知")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(getOnGoing())
+                .setContentText("消息通知内容");
+//                .setStyle(new Notification.MessagingStyle.Message())
+        return mNotificationBuilder;
     }
 
     public int getStyle() {
@@ -79,90 +166,27 @@ public class NotificationConditions extends Notification{
         isReply = reply;
     }
 
-    public String getGroupKey() {
-        return groupKey;
+    public Boolean getSummary() {
+        return summary;
     }
 
-    public void setGroupKey(String groupKey) {
-        this.groupKey = groupKey;
+    public void setSummary(Boolean summary) {
+        this.summary = summary;
     }
 
-    //普通小通知模板
-    public Builder nomalNotificationBuilder(){
-        mNotificationBuilder = new Notification.Builder(mContext)
-                .setContentTitle("普通小通知")
-                .setContentText("普通小通知的内容")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setOngoing(getOnGoing())
-                .setGroup(groupKey)
-                .setTicker("普通小通知");
-        Log.d("test", "builder  普通通知  成功 " );
-        return mNotificationBuilder;
+    public boolean isGroup() {
+        return isGroup;
     }
 
-    //文本通知模板
-    public Builder bigTextNotificationBuilder(){
-        mNotificationBuilder = new Notification.Builder(mContext)
-                .setContentTitle("大文本通知")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker("大文本通知")
-                .setOngoing(getOnGoing())
-                .setGroup(groupKey)
-                .setStyle(new Notification.BigTextStyle())
-                .setContentText("大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知\n"
-                        +"大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知\n"
-                        +"大文本通知大文本通知大文本通知大文本通知大文本通知大文本通知");
-        return mNotificationBuilder;
+    public void setGroup(boolean group) {
+        isGroup = group;
     }
 
-    //大图通知模板
-    public Builder bigPictureNotificationBuilder(){
-        mNotificationBuilder = new Notification.Builder(mContext)
-                .setContentTitle("大图通知")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker("大图通知")
-                .setOngoing(getOnGoing())
-                .setGroup(groupKey)
-                .setStyle(new Notification.BigPictureStyle())
-                .setContentText("大图通知内容");
-        return mNotificationBuilder;
+    public boolean isSummary() {
+        return summary;
     }
 
-    //邮件通知模板
-    public Builder emailNotificationBuilder(){
-        mNotificationBuilder = new Notification.Builder(mContext)
-                .setContentTitle("邮件通知")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setTicker("邮件通知")
-                .setOngoing(getOnGoing())
-                .setGroup(groupKey)
-                .setStyle(new Notification.InboxStyle());
-        return mNotificationBuilder;
+    public void setSummary(boolean summary) {
+        this.summary = summary;
     }
-
-    //下载通知模板
-    public Builder progressNotificationBuilder(){
-        mNotificationBuilder = new Notification.Builder(mContext)
-                .setTicker("下载通知")
-                .setContentTitle("下载通知")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setOngoing(getOnGoing())
-                .setGroup(groupKey)
-                .setProgress(0, 0, true);
-        return mNotificationBuilder;
-    }
-
-    //消息通知模板
-    public Builder messageNotificationBuilder(){
-        mNotificationBuilder = new Notification.Builder(mContext)
-                .setTicker("消息通知")
-                .setContentTitle("消息通知")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setOngoing(getOnGoing())
-                .setGroup(groupKey)
-                .setContentText("消息通知内容");
-//                .setStyle(new Notification.MessagingStyle.Message())
-        return mNotificationBuilder;
-    }
-
 }
